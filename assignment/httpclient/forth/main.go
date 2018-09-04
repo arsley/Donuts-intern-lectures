@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 func isHTTPMethod(m string) bool {
@@ -39,12 +41,15 @@ func main() {
 		return
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	req = req.WithContext(ctx)
+	defer cancel()
+
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer res.Body.Close()
 
 	content, err := ioutil.ReadAll(res.Body)
 	if err != nil {

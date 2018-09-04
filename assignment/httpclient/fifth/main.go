@@ -1,10 +1,14 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
+
+	prettyjson "github.com/hokaccha/go-prettyjson"
 )
 
 func isHTTPMethod(m string) bool {
@@ -39,12 +43,15 @@ func main() {
 		return
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	req = req.WithContext(ctx)
+	defer cancel()
+
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer res.Body.Close()
 
 	content, err := ioutil.ReadAll(res.Body)
 	if err != nil {
@@ -58,5 +65,13 @@ func main() {
 	// }
 
 	// body
-	fmt.Println(string(content))
+	// fmt.Println(string(content))
+
+	// wrong
+	// modify in the future ...
+	if res.Header["Content-Type"][0] == "application/json" {
+		fmt.Println(prettyjson.Marshal(content))
+	} else {
+		fmt.Println(string(content))
+	}
 }

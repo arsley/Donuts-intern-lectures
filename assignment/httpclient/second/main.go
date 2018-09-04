@@ -19,6 +19,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
+	defer res.Body.Close()
 
 	content, err := ioutil.ReadAll(res.Body)
 	if err != nil {

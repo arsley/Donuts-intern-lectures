@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Movie</title>
+        <link rel="stylesheet" href="/static/bulma.min.css">
+    </head>
+    <body>
+        <h1>Movie page</h1>
+        <ul>
+            <li><a href="/">Index</a></li>
+            <li><a href="/about">About</a></li>
+        </ul>
+        <button type="button" class="button is-primary is-large" id="open" name="button">movie</button>
+        <div class="modal" id="modal-container">
+            <div class="modal-background"></div>
+            <div class="modal-content">
+                <video src="/static/cat.mp4" autoplay></video>
+            </div>
+            <button type="button" class="modal-close is-large" id="close" aria-label="close"></button>
+        </div>
+        <script type="text/javascript">
+            const
+                modal = document.getElementById('modal-container'),
+                open  = document.getElementById('open'),
+                close = document.getElementById('close');
+
+            open.addEventListener('click', function() {
+                modal.className += ' is-active';
+            });
+
+            close.addEventListener('click', function() {
+                modal.className = 'modal';
+            });
+        </script>
+    </body>
+</html>
