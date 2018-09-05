@@ -1,0 +1,12 @@
+version: "3"
+services:
+  web:
+    image: goserver/sample
+  rv-proxy:
+    image: nginx
+    volumes:
+      - ./nginx_conf:/etc/nginx/conf.d
+    links:
+      - "web:web2"
+    ports:
+      - "8080:80"

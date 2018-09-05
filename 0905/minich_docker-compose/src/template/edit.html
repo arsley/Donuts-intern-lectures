@@ -1,0 +1,36 @@
+{% extends "default.html" %}
+
+{% block content %}
+<h1>動画アップロード</h1>
+
+<div class="form-container">
+    <form action="/movies" method="post" enctype="multipart/form-data">
+        <div class="field">
+            <label class="label">Movie title:</label>
+            <div class="controll">
+                <input type="text" name="title" size="40" placeholder="{{ movie.Title }}" required>
+            </div>
+        </div>
+        <div class="field">
+            <label class="label">Movie file:</label>
+            <div class="controll">
+                <input type="file" name="movie" accept="audio/mp4" required>
+            </div>
+        </div>
+        <div class="field">
+            <label class="label">Movie thumbnail:</label>
+            <div class="controll">
+                <input type="file" name="thumbnail" accept="image" required>
+            </div>
+        </div>
+        <div class="field is-grouped">
+            <div class="control">
+                <input class="button is-primary" type="submit" value="Submit">
+            </div>
+            <div class="control">
+                <button class="button is-text"><a href="/movies">Cancel</a></button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

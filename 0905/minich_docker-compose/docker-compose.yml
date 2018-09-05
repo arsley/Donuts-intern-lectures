@@ -1,0 +1,15 @@
+version: "3"
+services:
+  mysql:
+    image: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=mysql
+  web:
+    build: ./src
+    volumes:
+      - ./src:/go/src/server
+    links:
+      - "mysql:db"
+    ports:
+      - "8080:8080"
+      - "3306:3306"
