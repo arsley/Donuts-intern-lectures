@@ -1,0 +1,7 @@
+CREATE TABLE `movie` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `title` VARCHAR(255) NOT NULL,
+  `path` VARCHAR(255) NOT NULL,
+  `thumbnail` VARCHAR(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

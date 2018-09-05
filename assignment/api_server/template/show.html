@@ -1,0 +1,26 @@
+{% extends "default.html" %}
+
+{% block content %}
+<h3 class="title">{{ movie.Title }}</h3>
+
+<div class="video-wrapper">
+    <video src="/static/{{ movie.Path }}" autoplay></video>
+    <p>
+        Awesome comment is here!!!
+    </p>
+</div>
+
+<div class="movie-delete">
+    <button class="button is-danger" id="del-confirm">Delete</button>
+</div>
+
+
+<script type="text/javascript">
+    const del = document.getElementById('del-confirm');
+    del.addEventListener('click', function() {
+        if (confirm('Are you sure?')) {
+            location.href = "/movie/{{ movie.ID }}/delete"
+        }
+    });
+</script>
+{% endblock %}

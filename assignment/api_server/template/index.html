@@ -1,0 +1,16 @@
+{% extends "default.html" %}
+
+{% block content %}
+<h3 class="title">Movies</h3>
+
+<div class="columns">
+    {% for movie in movies %}
+        <div class="column">
+            <figure class="image is-128x128">
+                <img src="/static/{{ movie.Thumbnail }}" alt="{{ movie.Title }}">
+            </figure>
+            <p><a href="/movie/{{ movie.ID }}">{{ movie.Title }}</a></p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
