@@ -1,0 +1,14 @@
+version: "3"
+services:
+  nginx:
+    image: nginx
+    volumes:
+      - ./conf.d:/etc/nginx/conf.d
+    ports:
+      - "8080:80"
+    links:
+      - "server:srv"
+    depends_on:
+      - server
+  server:
+    build: ./goserver
