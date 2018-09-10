@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"log"
-	"time"
 
 	"github.com/go-redis/redis"
 )
@@ -20,11 +19,15 @@ func main() {
 		key   string
 		val   string
 		field string
+		start int64
+		stop  int64
 	)
 	flag.StringVar(&cmd, "cmd", "", "wanna set `cmd`")
 	flag.StringVar(&key, "key", "", "wanna set `key`")
 	flag.StringVar(&val, "val", "", "wanna set `value`")
 	flag.StringVar(&field, "field", "", "wanna set `field`")
+	flag.Int64Var(&start, "start", 0, "wanna set `start`")
+	flag.Int64Var(&stop, "stop", 0, "wanna set `stop`")
 	flag.Parse()
 
 	// if cmd == "" || key == "" || val == "" {
@@ -47,25 +50,19 @@ func main() {
 		manager.Get(key)
 	case "del", "DEL":
 		manager.Del(key)
+	case "hset", "HSET":
+		manager.HSet(key, field, val)
+	case "hget", "HGET":
+		manager.HGet(key, field)
+	case "lpush", "LPUSH":
+		manager.LPush(key, val)
+	case "rpop", "RPOP":
+		manager.RPop(key)
+	case "lrange", "LRANGE":
+		manager.LRange(key, start, stop)
+	case "llen", "LLEN":
+		manager.LLen(key)
 	default:
 		log.Fatalln("Command invalid.")
 	}
-}
-
-// Get : get value from key
-func (r *RedisManager) Get(key string) {
-	result := r.Client.Get(key)
-	log.Println(result.String())
-}
-
-// Set : set key with value
-func (r *RedisManager) Set(key string, val string) {
-	result := r.Client.Set(key, val, time.Minute)
-	log.Println(result.String())
-}
-
-// Del : delete key from key
-func (r *RedisManager) Del(key string) {
-	result := r.Client.Del(key)
-	log.Println(result.String())
 }
