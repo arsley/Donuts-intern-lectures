@@ -53,9 +53,9 @@ func (h *Hub) sub() {
 
 // hubID as key
 func (h *Hub) storeMessage(msg string) {
-	redisClient.LPush(h.hubID, msg)
+	redisClient.RPush(h.hubID, msg)
 	if l, _ := redisClient.LLen(h.hubID).Result(); l > 10 {
-		redisClient.RPop(h.hubID)
+		redisClient.LPop(h.hubID)
 	}
 }
 
