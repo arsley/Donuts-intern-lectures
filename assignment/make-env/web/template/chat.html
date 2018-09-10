@@ -1,0 +1,80 @@
+{% extends "default.html" %}
+
+{% block title %}
+    <title>Chatroom {{ room }}</title>
+{% endblock %}
+
+{% block content %}
+
+<h1 class="title">Chatroom {{room}}</h1>
+
+<form id="form" class="field has-addons">
+    <div class="control">
+        <input class="input" id="text" type="text">
+    </div>
+    <div class="control">
+        <input class="button is-primary" id="submit" type="submit" value="send">
+    </div>
+</form>
+
+<div id="msg-container"></div>
+<p><button class="button is-text" id="close">close</button></p>
+
+<!-- script here -->
+<script>
+const sock = new ReconnectingWebSocket("ws://localhost:8082/ws/{{room}}", null, {
+    debug: true,
+    reconnectInterval: 3000,
+});
+const msgContainer = $('#msg-container');
+const msgContent = (name, msg) => `
+<article class="media">
+    <figure class="media-left">
+        <p class="image is-64x64">
+            <img src="https://via.placeholder.com/128x128" alt="sample">
+        </p>
+    </figure>
+    <div class="media-content">
+        <div class="content">
+            <p>
+                <strong>${name}</strong> <small>via hogeclient</small>
+                <br>
+                ${msg}
+            </p>
+        </div>
+    </div>
+</article>
+`;
+
+let username;
+
+sock.onopen = function (e) {
+    console.log("onopen");
+    console.log(e);
+    username = "User" + Math.round(e.timeStamp * 100) / 100;
+};
+sock.onclose = function (e) {
+    console.log("onclose");
+    console.log(e);
+};
+sock.onmessage = function (e) {
+    console.log("onmessage");
+    console.log(e);
+    msgContainer.prepend(msgContent(username, e.data))
+};
+
+$(function() {
+    $("#form").submit(function () {
+        var text = $("#text");
+        sock.send(text.val());
+        text.val("");
+        return false;
+    });
+    $("#close").click(function () {
+        sock.close();
+        return false;
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "default.html" %}
+
+{% block content %}
+    <h1>Lives</h1>
+    {% for l in lives %}
+    <li><a href="{{ l.URL() }}">{{l.name}}</a></li>
+    {% endfor %}
+{% endblock %}
