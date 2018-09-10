@@ -8,15 +8,21 @@ import (
 )
 
 // Get : get value from key
-func (r *RedisManager) Get(key string) {
+func (r *RedisManager) Get(key string) (string, error) {
 	result := r.Client.Get(key)
-	log.Println(result.String())
+	if _, err := result.Result(); err != nil {
+		return result.Val(), err
+	}
+	return result.Val(), nil
 }
 
 // Set : set key with value
-func (r *RedisManager) Set(key string, val string) {
+func (r *RedisManager) Set(key string, val string) (string, error) {
 	result := r.Client.Set(key, val, time.Minute)
-	log.Println(result.String())
+	if _, err := result.Result(); err != nil {
+		return result.Val(), err
+	}
+	return result.Val(), nil
 }
 
 // Del : delete key from key
