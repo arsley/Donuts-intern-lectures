@@ -51,6 +51,20 @@ func (h *Hub) sub() {
 	}
 }
 
+// hubID as key
+func (h *Hub) storeMessage(msg string) {
+	redisClient.LPush(h.hubID, msg)
+	if l, _ := redisClient.LLen(h.hubID).Result(); l > 10 {
+		redisClient.RPop(h.hubID)
+	}
+}
+
+func (h *Hub) getMessagesOnEnter() []string {
+	l, _ := redisClient.LLen(h.hubID).Result()
+	msgs, _ := redisClient.LRange(h.hubID, 0, l).Result()
+	return msgs
+}
+
 func (h *Hub) pub(message []byte) {
 	redisClient.Publish(h.hubID, message)
 }
@@ -63,6 +77,10 @@ func (h *Hub) run() {
 				return
 			}
 			h.clients[client] = struct{}{}
+			msgs := h.getMessagesOnEnter()
+			for _, msg := range msgs {
+				client.send <- []byte(msg)
+			}
 		case client, ok := <-h.unregister:
 			if !ok {
 				return
@@ -76,6 +94,7 @@ func (h *Hub) run() {
 			if !ok {
 				return
 			}
+			h.storeMessage(string(message))
 			for client := range h.clients {
 				select {
 				case client.send <- message:
@@ -87,18 +106,6 @@ func (h *Hub) run() {
 		}
 	}
 }
-
-// func (h *Hub) sub(room string) {
-// 	subscription := redisClient.Subscribe(room)
-// 	defer subscription.Close()
-// 	for {
-// 		message, err := subscription.ReceiveMessage()
-// 		if err != nil {
-// 			break
-// 		}
-// 		h.broadcast <- []byte(message.Payload)
-// 	}
-// }
 
 func (h *Hub) stop() {
 	close(h.register)
