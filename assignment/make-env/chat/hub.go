@@ -141,6 +141,7 @@ func (m *HubManager) run() {
 				if len(h.clients) == 0 {
 					h.stop()
 					delete(m.hubs, client.hubID)
+					redisClient.Del(h.hubID)
 				}
 			}
 		}
