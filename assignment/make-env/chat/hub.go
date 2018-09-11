@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/go-redis/redis"
@@ -67,6 +68,48 @@ func (h *Hub) getMessagesOnEnter() []string {
 	return msgs
 }
 
+// about visit counter
+func (h *Hub) visit() {
+	rest := redisClient.HIncrBy("visitor", "total", 1)
+	resc := redisClient.HIncrBy("visitor", "current", 1)
+	_, errt := rest.Result()
+	_, errc := resc.Result()
+	if errt != nil {
+		log.Printf("visit error: %s\n", errt)
+	}
+	if errc != nil {
+		log.Printf("visit error: %s\n", errc)
+	}
+}
+
+func (h *Hub) leave() {
+	res := redisClient.HIncrBy("visitor", "current", -1)
+	_, err := res.Result()
+	if err != nil {
+		log.Printf("visit error: %s\n", err)
+	}
+}
+
+func (h *Hub) totalVisitor() int64 {
+	res := redisClient.HGet("visitor", "total")
+	counts, err := res.Int64()
+	if err != nil {
+		log.Printf("HGet totalVisitor error: %s\n", err)
+	}
+	return counts
+}
+
+func (h *Hub) currentVisitor() int64 {
+	res := redisClient.HGet("visitor", "current")
+	counts, err := res.Int64()
+	if err != nil {
+		log.Printf("HGet currentVisitor error: %s\n", err)
+	}
+	return counts
+}
+
+// end of visit util
+
 func (h *Hub) pub(message []byte) {
 	redisClient.Publish(h.hubID, message)
 }
@@ -83,6 +126,9 @@ func (h *Hub) run() {
 			for _, msg := range msgs {
 				client.send <- []byte(msg)
 			}
+			h.visit()
+			visitor := fmt.Sprintf("{\"visitor\":{\"total\":%v, \"current\":%v}}", h.totalVisitor(), h.currentVisitor())
+			client.send <- []byte(visitor)
 		case client, ok := <-h.unregister:
 			if !ok {
 				return
@@ -92,6 +138,7 @@ func (h *Hub) run() {
 				close(client.send)
 				h.manager.exit <- client
 			}
+			h.leave()
 		case message, ok := <-h.broadcast:
 			if !ok {
 				return

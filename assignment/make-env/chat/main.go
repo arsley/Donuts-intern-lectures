@@ -30,6 +30,9 @@ func main() {
 		exit:  make(chan *Client),
 	}
 	redisClient = redis.NewClient(&redis.Options{Addr: "redis:6379"})
+	// reset visitors
+	redisClient.HSet("visitor", "total", 0)
+	redisClient.HSet("visitor", "current", 0)
 
 	// main
 	go manager.run()
