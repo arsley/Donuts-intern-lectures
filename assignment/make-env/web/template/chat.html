@@ -60,13 +60,18 @@ sock.onclose = function (e) {
 sock.onmessage = function (e) {
     console.log("onmessage");
     console.log(e);
-    msgContainer.prepend(msgContent(username, e.data))
+    recMsg = JSON.parse(e.data)
+    msgContainer.prepend(msgContent(recMsg.username, recMsg.content))
 };
 
 $(function() {
     $("#form").submit(function () {
         var text = $("#text");
-        sock.send(text.val());
+        const sendMsg = JSON.stringify({
+            username,
+            content: text.val()
+        });
+        sock.send(sendMsg);
         text.val("");
         return false;
     });

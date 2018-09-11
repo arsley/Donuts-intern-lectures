@@ -47,7 +47,9 @@ func (h *Hub) sub() {
 			log.Printf("error: %s ", err)
 			return
 		}
-		h.broadcast <- []byte(message.Payload)
+		// h.broadcast <- []byte(message.Payload)
+		msg := Parse([]byte(message.Payload))
+		h.broadcast <- Stringify(msg.Username, msg.Content)
 	}
 }
 
