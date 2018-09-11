@@ -1,7 +1,9 @@
 package main
 
 import (
+	"database/sql"
 	"database/sql/driver"
+	"errors"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -63,6 +65,109 @@ func TestConsumeCoin(t *testing.T) {
 			},
 			setupMock: func(mock sqlmock.Sqlmock, args args, params mockParams) {
 				mock.ExpectBegin().WillReturnError(driver.ErrBadConn)
+			},
+			wantErr: true,
+		},
+		{
+			name: "Fail to Row scan",
+			args: args{
+				userID: 0,
+			},
+			setupMock: func(mock sqlmock.Sqlmock, args args, params mockParams) {
+				mock.ExpectBegin()
+				mock.ExpectQuery(
+					"SELECT .+ FROM user_coin .+ FOR UPDATE",
+				).WillReturnError(sql.ErrNoRows)
+				mock.ExpectRollback()
+			},
+			wantErr: true,
+		},
+		{
+			name: "Fail to Exec",
+			args: args{
+				userID: 100,
+				amount: 1000,
+			},
+			mockParams: mockParams{
+				coin: 10000,
+			},
+			setupMock: func(mock sqlmock.Sqlmock, args args, params mockParams) {
+				mock.ExpectBegin()
+				mock.ExpectQuery(
+					"SELECT .+ FROM user_coin .+ FOR UPDATE",
+				).WithArgs(
+					args.userID,
+				).WillReturnRows(
+					sqlmock.NewRows([]string{"coin"}).AddRow(
+						params.coin,
+					),
+				)
+				mock.ExpectExec(
+					"UPDATE user_coin SET .+",
+				).WillReturnError(errors.New("Updates error"))
+				mock.ExpectRollback()
+			},
+			wantErr: true,
+		},
+		{
+			name: "Fail to affect row",
+			args: args{
+				userID: 100,
+				amount: 1000,
+			},
+			mockParams: mockParams{
+				coin: 10000,
+			},
+			setupMock: func(mock sqlmock.Sqlmock, args args, params mockParams) {
+				mock.ExpectBegin()
+				mock.ExpectQuery(
+					"SELECT .+ FROM user_coin .+ FOR UPDATE",
+				).WithArgs(
+					args.userID,
+				).WillReturnRows(
+					sqlmock.NewRows([]string{"coin"}).AddRow(
+						params.coin,
+					),
+				)
+				mock.ExpectExec(
+					"UPDATE user_coin SET .+",
+				).WithArgs(
+					args.amount, args.userID,
+				).WillReturnResult(
+					sqlmock.NewResult(0, 0),
+				)
+				mock.ExpectRollback()
+			},
+			wantErr: true,
+		},
+		{
+			name: "Fail to commit",
+			args: args{
+				userID: 100,
+				amount: 1000,
+			},
+			mockParams: mockParams{
+				coin: 10000,
+			},
+			setupMock: func(mock sqlmock.Sqlmock, args args, params mockParams) {
+				mock.ExpectBegin()
+				mock.ExpectQuery(
+					"SELECT .+ FROM user_coin .+ FOR UPDATE",
+				).WithArgs(
+					args.userID,
+				).WillReturnRows(
+					sqlmock.NewRows([]string{"coin"}).AddRow(
+						params.coin,
+					),
+				)
+				mock.ExpectExec(
+					"UPDATE user_coin SET .+",
+				).WithArgs(
+					args.amount, args.userID,
+				).WillReturnResult(
+					sqlmock.NewResult(0, 1),
+				)
+				mock.ExpectCommit().WillReturnError(errors.New("Commit fail"))
 			},
 			wantErr: true,
 		},

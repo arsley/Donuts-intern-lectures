@@ -54,7 +54,7 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">/Volumes/JetDrive/donuts_intern/lecture/assignment/sqlmocktest/sample2/main.go (68.2%)</option>
+				<option value="file0">/Volumes/JetDrive/donuts_intern/lecture/assignment/sqlmocktest/sample2/main.go (100.0%)</option>
 				
 				</select>
 			</div>
@@ -87,24 +87,24 @@ func ConsumeCoin(db *sql.DB, userID int64, amount int64) error <span class="cov8
         <span class="cov8" title="1">q1 := "SELECT coin FROM user_coin WHER user_id = ? FOR UPDATE"
         var coin int64
         row := db.QueryRow(q1, userID)
-        if err := row.Scan(&amp;coin); err != nil </span><span class="cov0" title="0">{
+        if err := row.Scan(&amp;coin); err != nil </span><span class="cov8" title="1">{
                 tx.Rollback()
                 return err
         }</span>
         <span class="cov8" title="1">if coin-amount &gt; 0 </span><span class="cov8" title="1">{
                 q2 := "UPDATE user_coin SET coin - ? WHERE user_id = ?"
                 result, err := db.Exec(q2, amount, userID)
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         tx.Rollback()
                         return err
                 }</span>
                 <span class="cov8" title="1">affected, _ := result.RowsAffected()
-                if affected == 0 </span><span class="cov0" title="0">{
+                if affected == 0 </span><span class="cov8" title="1">{
                         tx.Rollback()
                         return fmt.Errorf("no rows were affected")
                 }</span>
         }
-        <span class="cov8" title="1">if err := tx.Commit(); err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if err := tx.Commit(); err != nil </span><span class="cov8" title="1">{
                 return err
         }</span>
         <span class="cov8" title="1">return nil</span>
