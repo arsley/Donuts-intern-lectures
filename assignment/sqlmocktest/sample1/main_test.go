@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"reflect"
 	"testing"
 
@@ -21,6 +22,7 @@ func TestFetchUser(t *testing.T) {
 		mockParams mockParams
 		want       *User
 		wantErr    bool
+		domock     func(sqlmock.Sqlmock, args, mockParams)
 	}{
 		{
 			name: "ユーザーデータを取得できる",
@@ -31,10 +33,35 @@ func TestFetchUser(t *testing.T) {
 				id:   100,
 				name: "name",
 			},
+			domock: func(mock sqlmock.Sqlmock, args args, mockParams mockParams) {
+				mock.ExpectQuery(
+					"SELECT .+ FROM user WHERE .+",
+				).WithArgs(
+					args.id,
+				).WillReturnRows(
+					sqlmock.NewRows([]string{
+						"id", "name",
+					}).AddRow(
+						mockParams.id, mockParams.name,
+					),
+				)
+			},
 			want: &User{
 				ID:   100,
 				Name: "name",
 			},
+		},
+		{
+			name: "When use incorrect id, gets nothing",
+			args: args{
+				id: 0,
+			},
+			domock: func(mock sqlmock.Sqlmock, args args, mockParams mockParams) {
+				mock.ExpectQuery(
+					"SELECT .+ FROM user WHERE .+",
+				).WillReturnError(sql.ErrNoRows)
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -44,17 +71,7 @@ func TestFetchUser(t *testing.T) {
 				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
 			defer db.Close()
-			mock.ExpectQuery(
-				"SELECT .+ FROM user WHERE .+",
-			).WithArgs(
-				tt.args.id,
-			).WillReturnRows(
-				sqlmock.NewRows([]string{
-					"id", "name",
-				}).AddRow(
-					tt.mockParams.id, tt.mockParams.name,
-				),
-			)
+			tt.domock(mock, tt.args, tt.mockParams)
 			got, err := FetchUser(db, tt.args.id)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FetchUser() error = %v, wantErr %v", err, tt.wantErr)

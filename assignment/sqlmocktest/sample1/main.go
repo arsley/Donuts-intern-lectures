@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"log"
 )
 
 type User struct {
@@ -10,18 +9,7 @@ type User struct {
 	Name string `db:"name"`
 }
 
-func main() {
-	db, err := sql.Open("mysql", "root@/testdb")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-	user, err := FetchUser(db, 100)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("%v\n", user)
-}
+func main() {}
 
 func FetchUser(db *sql.DB, id int64) (*User, error) {
 	q := " SELECT id, name FROM user WHERE id = ? "
