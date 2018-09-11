@@ -13,13 +13,14 @@ func DoubleCoin(db *sqlx.DB, userID int64) error {
 	if err != nil {
 		return err
 	}
-	q1 := "SELECT coin FROM user_coin WHERE user_id = ?"
+	q1 := "SELECT coin FROM user_coin WHERE user_id = ? FOR UPDATE"
 	var coin int64
 	if err := tx.Get(&coin, q1, userID); err != nil {
+		tx.Rollback()
 		return err
 	}
-	q2 := "UPDATE user_coint SET coin = ? WHERE user_id = ?"
-	_, err = tx.Exec(q2, coin)
+	q2 := "UPDATE user_coin SET coin = ? WHERE user_id = ?"
+	_, err = tx.Exec(q2, coin*2, userID)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -33,7 +34,7 @@ func CreateOrUpdateUser(db *sqlx.DB, name, serviceToken string) error {
 		return err
 	}
 	q1 := "INSERT INTO user (name) VALUES (?)"
-	result, err := tx.Exec(q1)
+	result, err := tx.Exec(q1, name)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -54,7 +55,7 @@ func CreateOrUpdateUser(db *sqlx.DB, name, serviceToken string) error {
 		tx.Rollback()
 		return err
 	}
-	if affected == 1 {
+	if affected == 2 {
 		q3 := "UPDATE service_link SET user_id = ? WHERE service_token = ?"
 		_, err := tx.Exec(q3, userID, serviceToken)
 		if err != nil {
@@ -62,5 +63,6 @@ func CreateOrUpdateUser(db *sqlx.DB, name, serviceToken string) error {
 			return err
 		}
 	}
+	tx.Commit()
 	return nil
 }
